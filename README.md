@@ -1,6 +1,15 @@
 # TLS 分流隧道
 用于分流 TLS 流量，支持按 sni 分流，分流 http 和无特征流量。并自带静态网站服务器，适用于 vmess + TLS + Web 方案实现，并可以与 trojan 共享端口。
 
+## 下载安装
+对于 linux-amd64 可以使用脚本安装，以 root 身份执行以下命令
+```shell script
+bash <(curl -L -s https://raw.githubusercontent.com/liberal-boy/tls-shunt-proxy/master/dist/install.sh)
+```
+* 配置文件位于 `/etc/tls-shunt-proxy/config.yaml`
+
+* 其他平台需自行编译安装
+
 ## 使用
 命令行参数：
 ```
