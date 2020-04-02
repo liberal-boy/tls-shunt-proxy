@@ -63,7 +63,7 @@ func handleWithServerName(conn net.Conn, serverName string) {
 		isHttp, conn = sniffHttpFromConn(conn)
 	}
 
-	if isHttp {
+	if isHttp && vh.Http != nil {
 		vh.Http.Handle(conn)
 		return
 	}
