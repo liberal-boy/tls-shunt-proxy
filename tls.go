@@ -12,8 +12,8 @@ func init() {
 	certmagic.DefaultACME.Agreed = true
 }
 
-func getTlsConfig(serverName, cert, key string) (*tls.Config, error) {
-	certificateFunc, err := getCertificateFunc(serverName, cert, key)
+func getTlsConfig(managedCert bool, serverName, cert, key string) (*tls.Config, error) {
+	certificateFunc, err := getCertificateFunc(managedCert, serverName, cert, key)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func getTlsConfig(serverName, cert, key string) (*tls.Config, error) {
 	return tlsConfig, nil
 }
 
-func getCertificateFunc(serverName, cert, key string) (func(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error), error) {
+func getCertificateFunc(managedCert bool, serverName, cert, key string) (func(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error), error) {
 	config := certmagic.Config{
 		Storage: &certmagic.FileStorage{Path: "./"},
 	}
@@ -51,17 +51,18 @@ func getCertificateFunc(serverName, cert, key string) (func(clientHello *tls.Cli
 
 	magic := certmagic.New(cache, config)
 
-	if cert != "" && key != "" {
+	if managedCert {
+		err := magic.ManageAsync(context.Background(), []string{serverName})
+		if err != nil {
+			return nil, err
+		}
+	} else {
 		err := magic.CacheUnmanagedCertificatePEMFile(cert, key, nil)
 		if err != nil {
 			err = fmt.Errorf("fail to load tls key pair for %s: %v", serverName, err)
 			return nil, err
 		}
-	} else {
-		err := magic.ManageAsync(context.Background(), []string{serverName})
-		if err != nil {
-			return nil, err
-		}
 	}
+
 	return magic.GetCertificate, nil
 }

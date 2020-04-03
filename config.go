@@ -16,6 +16,7 @@ type (
 	rawVHost struct {
 		Name          string
 		TlsOffloading bool
+		ManagedCert   bool
 		Cert          string
 		Key           string
 		Http          rawHandler
@@ -64,7 +65,7 @@ func readConfig(path string) (conf config, err error) {
 		var tlsConfig *tls.Config
 
 		if vh.TlsOffloading {
-			tlsConfig, err = getTlsConfig(vh.Name, vh.Cert, vh.Key)
+			tlsConfig, err = getTlsConfig(vh.ManagedCert, vh.Name, vh.Cert, vh.Key)
 		}
 
 		conf.vHosts[vh.Name] = vHost{

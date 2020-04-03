@@ -37,7 +37,10 @@ vhosts:
     # tlsoffloading: 解开 tls，true 为解开，解开后可以识别 http 流量，适用于 vmess over tls 和 http over tls (https) 分流等
     tlsoffloading: true
 
-    # 当 cert 或 key 为空时，将自动从 LetsEncrypt 获取证书，根据 LetsEncrypt 的要求，必须监听 443 端口才能签发
+    # managedcert: 管理证书，开启后将自动从 LetsEncrypt 获取证书，根据 LetsEncrypt 的要求，必须监听 443 端口才能签发
+    # 开启时 cert 和 key 设置的证书无效，关闭时将使用 cert 和 key 设置的证书
+    managedcert: false
+
     # cert: tls 证书路径，
     cert: /etc/ssl/vmess.example.com.pem
 
@@ -68,7 +71,7 @@ vhosts:
   - name: trojan.example.com
 
     # tlsoffloading: 解开 tls，false 为不解开，直接处理 tls 流量，适用于 trojan-gfw 等
-    tlsOffloading: false
+    tlsoffloading: false
 
     # default: 关闭 tlsoffloading 时，目前没有识别方法，均按其他流量处理
     default:
