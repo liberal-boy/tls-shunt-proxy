@@ -7,8 +7,9 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=tls-shunt-proxy
-CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_BIND_SERVICE
 StandardError=journal
+WorkingDirectory=/etc/ssl/tls-shunt-proxy
 ExecStart=/usr/local/bin/tls-shunt-proxy -config /etc/tls-shunt-proxy/config.yaml
 LimitNOFILE=51200
 Restart=on-failure

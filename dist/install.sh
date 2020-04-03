@@ -20,7 +20,12 @@ useradd tls-shunt-proxy -s /usr/sbin/nologin
 mkdir -p '/etc/systemd/system'
 curl -L -H "Cache-Control: no-cache" -o '/etc/systemd/system/tls-shunt-proxy.service' 'https://raw.githubusercontent.com/liberal-boy/tls-shunt-proxy/master/dist/tls-shunt-proxy.service'
 
-mkdir -p '/etc/tls-shunt-proxy'
-curl -L -H "Cache-Control: no-cache" -o '/etc/tls-shunt-proxy/config.yaml' 'https://raw.githubusercontent.com/liberal-boy/tls-shunt-proxy/master/config.simple.yaml'
+if [ ! -f "/etc/tls-shunt-proxy/config.yaml" ]; then
+  mkdir -p '/etc/tls-shunt-proxy'
+  curl -L -H "Cache-Control: no-cache" -o '/etc/tls-shunt-proxy/config.yaml' 'https://raw.githubusercontent.com/liberal-boy/tls-shunt-proxy/master/config.simple.yaml'
+fi
+
+mkdir -p '/etc/ssl/tls-shunt-proxy'
+chown tls-shunt-proxy:tls-shunt-proxy /etc/ssl/tls-shunt-proxy
 
 rm -r "${VSRC_ROOT}"

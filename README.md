@@ -1,5 +1,9 @@
 # TLS 分流隧道
-用于分流 TLS 流量，支持按 sni 分流，分流 http 和无特征流量。并自带静态网站服务器，适用于 vmess + TLS + Web 方案实现，并可以与 trojan 共享端口。
+用于分流 TLS 流量，适用于 vmess + TLS + Web 方案实现，并可以与 trojan 共享端口。
+* sni 分流
+* http 和无特征流量分流
+* 静态网站服务器
+* 自动获取证书
 
 ## 下载安装
 对于 linux-amd64 可以使用脚本安装，以 root 身份执行以下命令
@@ -33,7 +37,8 @@ vhosts:
     # tlsoffloading: 解开 tls，true 为解开，解开后可以识别 http 流量，适用于 vmess over tls 和 http over tls (https) 分流等
     tlsoffloading: true
 
-    # cert: tls 证书路径
+    # 当 cert 或 key 为空时，将自动从 LetsEncrypt 获取证书，根据 LetsEncrypt 的要求，必须监听 443 端口才能签发
+    # cert: tls 证书路径，
     cert: /etc/ssl/vmess.example.com.pem
 
     # key: tls 私钥路径

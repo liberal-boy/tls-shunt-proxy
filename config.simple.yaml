@@ -3,13 +3,15 @@ listen: 0.0.0.0:443
 
 # vhosts: 按照按照 tls sni 扩展划分为多个虚拟 host
 vhosts:
+
     # name 对应 tls sni 扩展的 server name
   - name: vmess.example.com
 
     # tlsoffloading: 解开 tls，true 为解开，解开后可以识别 http 流量，适用于 vmess over tls 和 http over tls (https) 分流等
     tlsoffloading: true
 
-    # cert: tls 证书路径
+    # 当 cert 或 key 为空时，将自动从 LetsEncrypt 获取证书，根据 LetsEncrypt 的要求，必须监听 443 端口才能签发
+    # cert: tls 证书路径，
     cert: /etc/ssl/vmess.example.com.pem
 
     # key: tls 私钥路径
