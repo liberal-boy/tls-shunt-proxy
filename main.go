@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"flag"
+	"github.com/liberal-boy/tls-shunt-proxy/sniffer"
 	"github.com/stevenjohnstone/sni"
 	"log"
 	"net"
@@ -60,7 +61,7 @@ func handleWithServerName(conn net.Conn, serverName string) {
 
 	if vh.TlsConfig != nil {
 		conn = tlsOffloading(conn, vh.TlsConfig)
-		isHttp, conn = sniffHttpFromConn(conn)
+		isHttp, conn = sniffer.SniffHttpFromConn(conn)
 	}
 
 	if isHttp && vh.Http != nil {
