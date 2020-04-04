@@ -7,6 +7,7 @@ import (
 	"github.com/stevenjohnstone/sni"
 	"log"
 	"net"
+	"strings"
 )
 
 var conf config
@@ -58,15 +59,25 @@ func handleWithServerName(conn net.Conn, serverName string) {
 	}
 
 	isHttp := false
+	var path string
 
 	if vh.TlsConfig != nil {
 		conn = tlsOffloading(conn, vh.TlsConfig)
-		isHttp, conn = sniffer.SniffHttpFromConn(conn)
+		isHttp, path, conn = sniffer.SniffHttpFromConn(conn)
 	}
 
-	if isHttp && vh.Http != nil {
-		vh.Http.Handle(conn)
-		return
+	if isHttp {
+		for i, p := range vh.Paths {
+			if strings.HasPrefix(path, p) {
+				vh.PathHandlers[i].Handle(conn)
+				return
+			}
+		}
+
+		if vh.Http.Handle != nil {
+			vh.Http.Handle(conn)
+			return
+		}
 	}
 	vh.Default.Handle(conn)
 }

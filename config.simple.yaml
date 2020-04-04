@@ -23,6 +23,19 @@ vhosts:
     # http: 识别出的 http 流量的处理方式
     http:
 
+      # paths: 按 http 请求的 path 分流，从上到下匹配，找不到匹配项则使用 http 的 handler
+      paths:
+
+          # path: path 以该字符串开头的请求将应用此 handler
+        - path: /vmess/ws
+          handler: proxyPass
+          args: 127.0.0.1:40000
+
+          # path: http/2 请求的 path 将被识别为 *
+        - path: "*"
+          handler: proxyPass
+          args: 127.0.0.1:40003
+
       # handler: fileServer 将服务一个静态网站
       handler: fileServer
 

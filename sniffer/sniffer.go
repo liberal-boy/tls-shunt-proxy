@@ -1,55 +1,38 @@
 package sniffer
 
 import (
-	"bytes"
-	"errors"
 	"io"
 	"net"
 	"strings"
 )
 
-type peekPreDataConn struct {
-	net.Conn
-	rout         io.Reader
-	peeked, read bool
-}
-
 var httpMethods = [...]string{"GET", "POST", "HEAD", "PUT", "DELETE", "OPTIONS", "CONNECT", "PRI"}
 
-func newPeekPreDataConn(c net.Conn) *peekPreDataConn {
-	return &peekPreDataConn{Conn: c, rout: c}
-}
-
-func (c *peekPreDataConn) PeekPreData(n int) ([]byte, error) {
-	if c.read {
-		return nil, errors.New("pre-data must be peek before read")
-	}
-	if c.peeked {
-		return nil, errors.New("can only peek once")
-	}
-	c.peeked = true
-	preDate := make([]byte, n)
-	n, err := c.Conn.Read(preDate)
-	c.rout = io.MultiReader(bytes.NewReader(preDate[:n]), c.Conn)
-	return preDate[:n], err
-}
-
-func (c *peekPreDataConn) Read(p []byte) (int, error) {
-	c.read = true
-	return c.rout.Read(p)
-}
-
-func SniffHttpFromConn(conn net.Conn) (bool, net.Conn) {
+func SniffHttpFromConn(conn net.Conn) (bool, string, net.Conn) {
 	preConn := newPeekPreDataConn(conn)
-	preDate, err := preConn.PeekPreData(8)
-	if err != nil {
-		return false, preConn
+	preDate, err := preConn.PeekPreData(64)
+	if err != nil && err != io.EOF {
+		return false, "", preConn
 	}
-	header := string(preDate)
+	isHttp, path := sniff(preDate)
+	return isHttp, path, preConn
+}
+
+func sniff(b []byte) (isHttp bool, path string) {
+	parts := strings.Split(string(b), " ")
+
+	if len(parts) < 2 {
+		return
+	}
+
 	for _, m := range httpMethods {
-		if strings.HasPrefix(header, m+" ") {
-			return true, preConn
+		if parts[0] == m {
+			isHttp = true
+			break
 		}
 	}
-	return false, preConn
+
+	path = parts[1]
+
+	return
 }
