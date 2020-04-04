@@ -74,7 +74,7 @@ func handleWithServerName(conn net.Conn, serverName string) {
 			}
 		}
 
-		if vh.Http.Handle != nil {
+		if vh.Http != nil {
 			vh.Http.Handle(conn)
 			return
 		}
