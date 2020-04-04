@@ -30,7 +30,7 @@ func (c *peekPreDataConn) PeekPreData(n int) ([]byte, error) {
 	c.peeked = true
 	preDate := make([]byte, n)
 	n, err := c.Conn.Read(preDate)
-	c.rout = io.MultiReader(bytes.NewBuffer(preDate[:n]), c.Conn)
+	c.rout = io.MultiReader(bytes.NewReader(preDate[:n]), c.Conn)
 	return preDate[:n], err
 }
 
