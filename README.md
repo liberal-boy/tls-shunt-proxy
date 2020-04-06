@@ -76,6 +76,7 @@ vhosts:
           args: /var/www/static
 
       # handler: fileServer 将服务一个静态网站
+      # fileServer 支持 h2c, 如果使用 fileServer 处理 http, 且未设置 paths, alpn 可以开启 h2
       handler: fileServer
 
       # args: 静态网站的文件路径
