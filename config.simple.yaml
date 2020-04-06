@@ -23,6 +23,11 @@ vhosts:
     # alpn: ALPN, 多个 next protocol 之间用 "," 分隔
     alpn: h2,http/1.1
 
+    # protocols: 指定 tls 协议版本，格式为 min,max , 可用值 tls12(默认最小), tls13(默认最大)
+    # 如果最小值和最大值相同，那么你只需要写一次
+    # tls12 仅支持 FS 且 AEAD 的加密套件
+    protocols: tls12,tls13
+
     # http: 识别出的 http 流量的处理方式
     http:
 
