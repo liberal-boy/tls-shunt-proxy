@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 	"log"
 	"net"
 	"net/http"
@@ -13,7 +15,9 @@ type FileServerHandler struct {
 func NewFileServerHandler(path string) *FileServerHandler {
 	ln := NewConnListener()
 	go func() {
-		err := http.Serve(ln, http.FileServer(http.Dir(path)))
+		h2s := &http2.Server{}
+		fileServer := http.FileServer(http.Dir(path))
+		err := http.Serve(ln, h2c.NewHandler(fileServer, h2s))
 		if err != nil {
 			log.Fatalln(err)
 		}
