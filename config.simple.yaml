@@ -20,6 +20,9 @@ vhosts:
     # key: tls 私钥路径
     key: /etc/ssl/vmess.example.com.key
 
+    # alpn: ALPN, 多个 next protocol 之间用 "," 分隔
+    alpn: h2,http/1.1
+
     # http: 识别出的 http 流量的处理方式
     http:
 

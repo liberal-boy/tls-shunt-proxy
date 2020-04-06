@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"github.com/caddyserver/certmagic"
 	"github.com/go-acme/lego/v3/challenge/tlsalpn01"
+	"strings"
 )
 
 func init() {
 	certmagic.DefaultACME.Agreed = true
 }
 
-func getTlsConfig(managedCert bool, serverName, cert, key string) (*tls.Config, error) {
+func getTlsConfig(managedCert bool, serverName, cert, key, alpn string) (*tls.Config, error) {
 	certificateFunc, err := getCertificateFunc(managedCert, serverName, cert, key)
 	if err != nil {
 		return nil, err
@@ -20,7 +21,7 @@ func getTlsConfig(managedCert bool, serverName, cert, key string) (*tls.Config, 
 
 	tlsConfig := &tls.Config{
 		GetCertificate: certificateFunc,
-		NextProtos:     []string{"http/1.1", tlsalpn01.ACMETLS1Protocol},
+		NextProtos:     append(strings.Split(alpn, ","), tlsalpn01.ACMETLS1Protocol),
 		MinVersion:     tls.VersionTLS12,
 		CipherSuites: []uint16{
 			tls.TLS_AES_128_GCM_SHA256,
