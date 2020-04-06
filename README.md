@@ -54,7 +54,7 @@ vhosts:
       paths:
 
           # path: path 以该字符串开头的请求将应用此 handler
-        - path: /vmess/ws
+        - path: /vmess/ws/
           handler: proxyPass
           args: 127.0.0.1:40000
 
@@ -62,6 +62,15 @@ vhosts:
         - path: "*"
           handler: proxyPass
           args: 127.0.0.1:40003
+
+        - path: /static/
+
+          # trimprefix: 修剪前缀，将 http 流量交给 handler 时，修剪 path 中的前缀
+          # 如将 /static/logo.jpg 修剪为 /logo.jpg
+          trimprefix: /static
+
+          handler: fileServer
+          args: /var/www/static
 
       # handler: fileServer 将服务一个静态网站
       handler: fileServer

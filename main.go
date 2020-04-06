@@ -58,28 +58,35 @@ func handleWithServerName(conn net.Conn, serverName string) {
 		return
 	}
 
-	isHttp := false
-	var path string
-
 	if vh.TlsConfig != nil {
 		conn = tlsOffloading(conn, vh.TlsConfig)
-		isHttp, path, conn = sniffer.SniffHttpFromConn(conn)
-	}
+		sniffConn := sniffer.NewPeekPreDataConn(conn)
+		conn = sniffConn
 
-	if isHttp {
-		for i, p := range vh.Paths {
-			if strings.HasPrefix(path, p) {
-				vh.PathHandlers[i].Handle(conn)
+		if isHttp := sniffConn.Sniff(); isHttp {
+			if handleHttp(sniffConn, vh) {
 				return
 			}
 		}
-
-		if vh.Http != nil {
-			vh.Http.Handle(conn)
-			return
-		}
 	}
 	vh.Default.Handle(conn)
+}
+
+func handleHttp(conn *sniffer.HttpSniffConn, vh vHost) bool {
+	for _, p := range vh.PathHandlers {
+		if strings.HasPrefix(conn.GetPath(), p.path) {
+			conn.SetPath(strings.TrimPrefix(conn.GetPath(), p.trimPrefix))
+			p.handler.Handle(conn)
+			return true
+		}
+	}
+
+	if vh.Http != nil {
+		vh.Http.Handle(conn)
+		return true
+	}
+
+	return false
 }
 
 func tlsOffloading(conn net.Conn, tlsConfig *tls.Config) *tls.Conn {

@@ -32,9 +32,10 @@ type (
 		Args    string
 	}
 	rawPathHandler struct {
-		Path    string
-		Handler string
-		Args    string
+		Path       string
+		Handler    string
+		Args       string
+		TrimPrefix string
 	}
 )
 
@@ -46,9 +47,12 @@ type (
 	vHost struct {
 		TlsConfig    *tls.Config
 		Http         handler.Handler
-		Paths        []string
-		PathHandlers []handler.Handler
+		PathHandlers []pathHandler
 		Default      handler.Handler
+	}
+	pathHandler struct {
+		path, trimPrefix string
+		handler          handler.Handler
 	}
 )
 
@@ -80,18 +84,19 @@ func readConfig(path string) (conf config, err error) {
 			tlsConfig, err = getTlsConfig(vh.ManagedCert, vh.Name, vh.Cert, vh.Key)
 		}
 
-		paths := make([]string, len(vh.Http.Paths))
-		pathHandlers := make([]handler.Handler, len(vh.Http.Paths))
+		pathHandlers := make([]pathHandler, len(vh.Http.Paths))
 
 		for i, p := range vh.Http.Paths {
-			paths[i] = p.Path
-			pathHandlers[i] = newHandler(p.Handler, p.Args)
+			pathHandlers[i] = pathHandler{
+				path:       p.Path,
+				trimPrefix: p.TrimPrefix,
+				handler:    newHandler(p.Handler, p.Args),
+			}
 		}
 
 		conf.vHosts[vh.Name] = vHost{
 			TlsConfig:    tlsConfig,
 			Http:         newHandler(vh.Http.Handler, vh.Http.Args),
-			Paths:        paths,
 			PathHandlers: pathHandlers,
 			Default:      newHandler(vh.Default.Handler, vh.Default.Args),
 		}
