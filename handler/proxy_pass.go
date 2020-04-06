@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/oxtoacart/bpool"
 	"io"
 	"log"
 	"net"
@@ -12,9 +13,7 @@ type ProxyPassHandler struct {
 	target string
 }
 
-var bufPool = sync.Pool{New: func() interface{} {
-	return make([]byte, 32*1024)
-}}
+var bufPool = bpool.NewBytePool(128, 32*1024)
 
 func NewProxyPassHandler(target string) *ProxyPassHandler {
 	return &ProxyPassHandler{target: target}
@@ -41,7 +40,7 @@ func (h *ProxyPassHandler) Handle(conn net.Conn) {
 	wg.Add(2)
 
 	go func(srcConn net.Conn, dstConn net.Conn) {
-		buf := bufPool.Get().([]byte)
+		buf := bufPool.Get()
 		defer bufPool.Put(buf)
 		_, err := io.CopyBuffer(dstConn, srcConn, buf)
 		if err != nil && err != io.EOF {
@@ -50,7 +49,7 @@ func (h *ProxyPassHandler) Handle(conn net.Conn) {
 		wg.Done()
 	}(conn, dstConn)
 	go func(srcConn net.Conn, dstConn net.Conn) {
-		buf := bufPool.Get().([]byte)
+		buf := bufPool.Get()
 		defer bufPool.Put(buf)
 		_, err := io.CopyBuffer(srcConn, dstConn, buf)
 		if err != nil && err != io.EOF {
