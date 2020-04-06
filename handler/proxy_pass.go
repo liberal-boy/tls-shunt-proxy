@@ -12,6 +12,10 @@ type ProxyPassHandler struct {
 	target string
 }
 
+var bufPool = sync.Pool{New: func() interface{} {
+	return make([]byte, 32*1024)
+}}
+
 func NewProxyPassHandler(target string) *ProxyPassHandler {
 	return &ProxyPassHandler{target: target}
 }
@@ -37,14 +41,18 @@ func (h *ProxyPassHandler) Handle(conn net.Conn) {
 	wg.Add(2)
 
 	go func(srcConn net.Conn, dstConn net.Conn) {
-		_, err := io.Copy(dstConn, srcConn)
+		buf := bufPool.Get().([]byte)
+		defer bufPool.Put(buf)
+		_, err := io.CopyBuffer(dstConn, srcConn, buf)
 		if err != nil && err != io.EOF {
 			log.Printf("failed to send to %s:%v\n", h.target, err)
 		}
 		wg.Done()
 	}(conn, dstConn)
 	go func(srcConn net.Conn, dstConn net.Conn) {
-		_, err := io.Copy(srcConn, dstConn)
+		buf := bufPool.Get().([]byte)
+		defer bufPool.Put(buf)
+		_, err := io.CopyBuffer(srcConn, dstConn, buf)
 		if err != nil && err != io.EOF {
 			log.Printf("failed to read from %s: %v\n", h.target, err)
 		}
