@@ -110,3 +110,9 @@ vhosts:
       args: 127.0.0.1:8443
 ```
 </details>
+
+## 故障排查和常见问题
+
+1. service 启动失败，请使用命令 `sudo -u tls-shunt-proxy /usr/local/bin/tls-shunt-proxy -config /etc/tls-shunt-proxy/config.yaml` 运行，获取错误信息
+
+2. `fail to load tls key pair for xxx.xxx: open /xxx/xxx.key: permission denied` 确保用户 `tls-shunt-proxy` 有权读取证书
