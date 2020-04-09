@@ -52,7 +52,7 @@ func handle(conn net.Conn) {
 }
 
 func handleWithServerName(conn net.Conn, serverName string) {
-	vh, has := conf.vHosts[serverName]
+	vh, has := conf.vHosts[strings.ToLower(serverName)]
 	if !has {
 		log.Printf("no available vhost for %s\n", serverName)
 		return

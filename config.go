@@ -6,6 +6,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
+	"strings"
 )
 
 type (
@@ -96,7 +97,7 @@ func readConfig(path string) (conf config, err error) {
 			}
 		}
 
-		conf.vHosts[vh.Name] = vHost{
+		conf.vHosts[strings.ToLower(vh.Name)] = vHost{
 			TlsConfig:    tlsConfig,
 			Http:         newHandler(vh.Http.Handler, vh.Http.Args),
 			PathHandlers: pathHandlers,
