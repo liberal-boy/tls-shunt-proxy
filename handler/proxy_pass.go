@@ -40,24 +40,18 @@ func (h *ProxyPassHandler) Handle(conn net.Conn) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
-	go func(srcConn net.Conn, dstConn net.Conn) {
-		buf := bufPool.Get().([]byte)
-		defer bufPool.Put(buf)
-		_, err := io.CopyBuffer(dstConn, srcConn, buf)
-		if err != nil && err != io.EOF {
-			log.Printf("failed to send to %s:%v\n", h.target, err)
-		}
-		wg.Done()
-	}(conn, dstConn)
-	go func(srcConn net.Conn, dstConn net.Conn) {
-		buf := bufPool.Get().([]byte)
-		defer bufPool.Put(buf)
-		_, err := io.CopyBuffer(srcConn, dstConn, buf)
-		if err != nil && err != io.EOF {
-			log.Printf("failed to read from %s: %v\n", h.target, err)
-		}
-		wg.Done()
-	}(conn, dstConn)
+	go doCopy(dstConn, conn, &wg)
+	go doCopy(conn, dstConn, &wg)
 
 	wg.Wait()
+}
+
+func doCopy(dst io.Writer, src io.Reader, wg *sync.WaitGroup) {
+	buf := bufPool.Get().([]byte)
+	defer bufPool.Put(buf)
+	_, err := io.CopyBuffer(dst, src, buf)
+	if err != nil && err != io.EOF {
+		log.Printf("failed to proxy pass: %v\n", err)
+	}
+	wg.Done()
 }
