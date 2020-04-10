@@ -11,8 +11,9 @@ import (
 
 type (
 	rawConfig struct {
-		Listen string
-		VHosts []rawVHost
+		Listen                                string
+		InboundBufferSize, OutboundBufferSize int
+		VHosts                                []rawVHost
 	}
 	rawVHost struct {
 		Name          string
@@ -60,6 +61,7 @@ type (
 )
 
 func readRawConfig(path string) (conf rawConfig, err error) {
+	conf = rawConfig{InboundBufferSize: 4, OutboundBufferSize: 32}
 	yamlFile, err := ioutil.ReadFile(path)
 	if err != nil {
 		return
@@ -76,6 +78,8 @@ func readConfig(path string) (conf config, err error) {
 	if err != nil {
 		return
 	}
+
+	handler.InitBufferPools(rawConf.InboundBufferSize*1024, rawConf.OutboundBufferSize*1024)
 
 	conf.Listen = rawConf.Listen
 	conf.vHosts = make(map[string]vHost, len(rawConf.VHosts))
