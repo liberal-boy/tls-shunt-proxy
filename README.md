@@ -1,4 +1,6 @@
 # TLS 分流器
+[Telegram](https://t.me/tls_shunt_proxy)
+
 用于分流 TLS 流量，适用于 vmess + TLS + Web 方案实现，并可以与 trojan 共享端口。
 * sni 分流
 * http 和无特征流量分流
