@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"flag"
+	"github.com/liberal-boy/tls-shunt-proxy/handler"
 	"github.com/liberal-boy/tls-shunt-proxy/sniffer"
 	"github.com/stevenjohnstone/sni"
 	"log"
@@ -81,7 +82,7 @@ func handleHttp(conn *sniffer.HttpSniffConn, vh vHost) bool {
 		}
 	}
 
-	if vh.Http != nil {
+	if vh.Http != handler.NoopHandler {
 		vh.Http.Handle(conn)
 		return true
 	}

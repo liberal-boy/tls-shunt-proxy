@@ -114,7 +114,7 @@ func readConfig(path string) (conf config, err error) {
 func newHandler(name, args string) handler.Handler {
 	switch name {
 	case "":
-		return nil
+		return handler.NoopHandler
 	case "proxyPass":
 		return handler.NewProxyPassHandler(args)
 	case "fileServer":
