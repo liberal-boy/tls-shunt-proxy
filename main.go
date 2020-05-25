@@ -43,19 +43,21 @@ func listenAndServe() {
 }
 
 func handle(conn net.Conn) {
-	serverName, conn, err := sni.ServerNameFromConn(conn)
+	serverName, sniConn, err := sni.ServerNameFromConn(conn)
 	if err != nil {
 		log.Printf("fail to obtain server name: %v\n", err)
+		handler.NewPlainTextHandler(handler.SentHttpToHttps).Handle(conn)
 		return
 	}
 
-	handleWithServerName(conn, serverName)
+	handleWithServerName(sniConn, serverName)
 }
 
 func handleWithServerName(conn net.Conn, serverName string) {
 	vh, has := conf.vHosts[strings.ToLower(serverName)]
 	if !has {
 		log.Printf("no available vhost for %s\n", serverName)
+		handler.NewPlainTextHandler(handler.NoCertificateAvailable).Handle(conn)
 		return
 	}
 
