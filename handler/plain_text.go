@@ -23,7 +23,7 @@ func NewPlainTextHandler(text []byte) *PlainTextHandler {
 func (h *PlainTextHandler) Handle(conn net.Conn) {
 	_, err := conn.Write(h.text)
 	if err != nil {
-		log.Panicln("fail to serve plain text: ", err)
+		log.Println("fail to serve plain text: ", err)
 	}
 	_ = conn.Close()
 }
