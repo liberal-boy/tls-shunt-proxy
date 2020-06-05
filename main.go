@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"flag"
+	"fmt"
 	"github.com/liberal-boy/tls-shunt-proxy/handler"
 	"github.com/liberal-boy/tls-shunt-proxy/sniffer"
 	"github.com/stevenjohnstone/sni"
@@ -11,9 +12,13 @@ import (
 	"strings"
 )
 
+const version = "0.5.1"
+
 var conf config
 
 func main() {
+	fmt.Println("tls-shunt-proxy version", version)
+
 	config := flag.String("config", "./config.yaml", "Path to config file")
 	flag.Parse()
 
