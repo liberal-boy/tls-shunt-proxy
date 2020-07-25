@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-const version = "0.5.1"
+const version = "0.5.2"
 
 var conf config
 
