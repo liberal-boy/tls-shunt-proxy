@@ -50,6 +50,9 @@ vhosts:
     # 开启时 cert 和 key 设置的证书无效，关闭时将使用 cert 和 key 设置的证书
     managedcert: false
 
+    # keytype: 启用 managedcert 时，生成的密钥对类型，支持的选项 ed25519、p256、p384、rsa2048、rsa4096、rsa8192
+    keytype: p256
+
     # cert: tls 证书路径，
     cert: /etc/ssl/vmess.example.com.pem
 
