@@ -21,6 +21,7 @@ type (
 		ManagedCert   bool
 		Cert          string
 		Key           string
+		KeyType       string
 		Alpn          string
 		Protocols     string
 		Http          rawHttpHandler
@@ -88,7 +89,7 @@ func readConfig(path string) (conf config, err error) {
 		var tlsConfig *tls.Config
 
 		if vh.TlsOffloading {
-			tlsConfig, err = getTlsConfig(vh.ManagedCert, vh.Name, vh.Cert, vh.Key, vh.Alpn, vh.Protocols)
+			tlsConfig, err = getTlsConfig(vh.ManagedCert, vh.Name, vh.Cert, vh.Key, vh.KeyType, vh.Alpn, vh.Protocols)
 		}
 
 		pathHandlers := make([]pathHandler, len(vh.Http.Paths))

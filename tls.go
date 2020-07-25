@@ -19,8 +19,8 @@ func init() {
 	certmagic.DefaultACME.Agreed = true
 }
 
-func getTlsConfig(managedCert bool, serverName, cert, key, alpn, protocols string) (*tls.Config, error) {
-	certificateFunc, err := getCertificateFunc(managedCert, serverName, cert, key)
+func getTlsConfig(managedCert bool, serverName, cert, key, keyType, alpn, protocols string) (*tls.Config, error) {
+	certificateFunc, err := getCertificateFunc(managedCert, serverName, cert, key, keyType)
 	if err != nil {
 		return nil, err
 	}
@@ -59,9 +59,15 @@ func getTlsConfig(managedCert bool, serverName, cert, key, alpn, protocols strin
 	return tlsConfig, nil
 }
 
-func getCertificateFunc(managedCert bool, serverName, cert, key string) (func(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error), error) {
+func getCertificateFunc(managedCert bool, serverName, cert, key, keyType string) (func(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error), error) {
+	var keyGenerator = certmagic.DefaultKeyGenerator
+	if keyType != "" {
+		keyGenerator = certmagic.StandardKeyGenerator{KeyType: certmagic.KeyType(keyType)}
+	}
+
 	config := certmagic.Config{
-		Storage: &certmagic.FileStorage{Path: "./"},
+		Storage:   &certmagic.FileStorage{Path: "./"},
+		KeySource: keyGenerator,
 	}
 
 	cache := certmagic.NewCache(certmagic.CacheOptions{
