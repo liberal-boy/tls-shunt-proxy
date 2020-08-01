@@ -12,6 +12,7 @@ import (
 type (
 	rawConfig struct {
 		Listen                                string
+		RedirectHttps                         string
 		InboundBufferSize, OutboundBufferSize int
 		VHosts                                []rawVHost
 	}
@@ -46,8 +47,9 @@ type (
 
 type (
 	config struct {
-		Listen string
-		vHosts map[string]vHost
+		Listen        string
+		RedirectHttps string
+		vHosts        map[string]vHost
 	}
 	vHost struct {
 		TlsConfig    *tls.Config
@@ -83,6 +85,7 @@ func readConfig(path string) (conf config, err error) {
 	handler.InitBufferPools(rawConf.InboundBufferSize*1024, rawConf.OutboundBufferSize*1024)
 
 	conf.Listen = rawConf.Listen
+	conf.RedirectHttps = rawConf.RedirectHttps
 	conf.vHosts = make(map[string]vHost, len(rawConf.VHosts))
 
 	for _, vh := range rawConf.VHosts {

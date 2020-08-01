@@ -28,6 +28,10 @@ func main() {
 		log.Fatalf("failed to read config %s: %v", *config, err)
 	}
 
+	if conf.RedirectHttps != "" {
+		handler.ServeRedirectHttps(conf.RedirectHttps)
+	}
+
 	listenAndServe()
 }
 
