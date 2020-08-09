@@ -128,6 +128,6 @@ vhosts:
 
 ## 故障排查和常见问题
 
-1. service 启动失败，请使用命令 `sudo -u tls-shunt-proxy /usr/local/bin/tls-shunt-proxy -config /etc/tls-shunt-proxy/config.yaml` 运行，获取错误信息
+1. service 启动失败，请使用命令 `sudo setcap "cap_net_bind_service=+ep" /usr/local/bin/tls-shunt-proxy` 给 tls-shunt-proxy 赋予 CAP_NET_BIND_SERVICE 的 capability ，然后 `sudo -u tls-shunt-proxy /usr/local/bin/tls-shunt-proxy -config /etc/tls-shunt-proxy/config.yaml` 运行，获取错误信息
 
 2. `fail to load tls key pair for xxx.xxx: open /xxx/xxx.key: permission denied` 确保用户 `tls-shunt-proxy` 有权读取证书
