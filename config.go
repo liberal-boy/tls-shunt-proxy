@@ -26,6 +26,7 @@ type (
 		Alpn          string
 		Protocols     string
 		Http          rawHttpHandler
+		Trojan        rawHandler
 		Default       rawHandler
 	}
 	rawHandler struct {
@@ -55,6 +56,7 @@ type (
 		TlsConfig    *tls.Config
 		Http         handler.Handler
 		PathHandlers []pathHandler
+		Trojan       handler.Handler
 		Default      handler.Handler
 	}
 	pathHandler struct {
@@ -109,6 +111,7 @@ func readConfig(path string) (conf config, err error) {
 			TlsConfig:    tlsConfig,
 			Http:         newHandler(vh.Http.Handler, vh.Http.Args),
 			PathHandlers: pathHandlers,
+			Trojan:       newHandler(vh.Trojan.Handler, vh.Trojan.Args),
 			Default:      newHandler(vh.Default.Handler, vh.Default.Args),
 		}
 	}
