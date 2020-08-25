@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -9,7 +10,8 @@ import (
 )
 
 type ProxyPassHandler struct {
-	target string
+	target        string
+	proxyProtocol bool
 }
 
 var inboundBufferPool, outboundBufferPool *sync.Pool
@@ -25,8 +27,17 @@ func newBufferPool(size int) *sync.Pool {
 	}}
 }
 
-func NewProxyPassHandler(target string) *ProxyPassHandler {
-	return &ProxyPassHandler{target: target}
+func NewProxyPassHandler(args string) *ProxyPassHandler {
+	handler := ProxyPassHandler{}
+	parts := strings.Split(args, ";")
+	handler.target = parts[0]
+	for _, arg := range parts {
+		arg = strings.TrimSpace(arg)
+		if arg == "proxyProtocol" {
+			handler.proxyProtocol = true
+		}
+	}
+	return &handler
 }
 
 func (h *ProxyPassHandler) Handle(conn net.Conn) {
@@ -45,6 +56,31 @@ func (h *ProxyPassHandler) Handle(conn net.Conn) {
 		return
 	}
 	defer func() { _ = dstConn.Close() }()
+
+	if h.proxyProtocol {
+		remoteAddr, remotePort, err := net.SplitHostPort(conn.RemoteAddr().String())
+		if err != nil {
+			log.Printf("fail to send proxy %s :%v\n", h.target, err)
+			return
+		}
+		localAddr, localPort, err := net.SplitHostPort(conn.LocalAddr().String())
+		if err != nil {
+			log.Printf("fail to send proxy %s :%v\n", h.target, err)
+			return
+		}
+
+		var ipVer string
+		if strings.Index(remoteAddr, ":") >= 0 {
+			ipVer = "6"
+		} else {
+			ipVer = "4"
+		}
+		_, err = fmt.Fprintf(dstConn, "PROXY TCP%s %s %s %s %s\r\n", ipVer, remoteAddr, localAddr, remotePort, localPort)
+		if err != nil {
+			log.Printf("fail to send proxy %s :%v\n", h.target, err)
+			return
+		}
+	}
 
 	var wg sync.WaitGroup
 	wg.Add(2)
