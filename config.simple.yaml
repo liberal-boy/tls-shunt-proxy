@@ -73,6 +73,11 @@ vhosts:
       # args: 静态网站的文件路径
       args: /var/www/html
 
+    # trojan: Trojan 协议流量处理方式
+    trojan:
+      handler: proxyPass
+      args: 127.0.0.1:4430
+
     # default: 其他流量处理方式
     default:
 
@@ -81,6 +86,9 @@ vhosts:
 
       # args: 转发的目标地址
       args: 127.0.0.1:40001
+
+      # args: 支持通过 Proxy Protocol 将源地址向后端传抵，目前仅支持 v1
+      # args: 127.0.0.1:40001;proxyProtocol
 
       # args: 也可以使用 domain socket
       # args: unix:/path/to/ds/file
