@@ -103,7 +103,7 @@ func (c *SniffConn) sniffTrojan() bool {
 	}
 
 	if c.preData[56] == 0x0D && c.preData[57] == 0x0A {
-		if c.preData[58] == 0x01 || c.preData[58] == 0x03 {
+		if c.preData[58] == 0x01 || c.preData[58] == 0x03 || c.preData[58] == 0x7f {
 			if c.preData[59] == 0x01 || c.preData[59] == 0x03 || c.preData[59] == 0x04 {
 				return true
 			}
