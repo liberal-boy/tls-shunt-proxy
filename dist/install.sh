@@ -26,6 +26,6 @@ if [ ! -f "/etc/tls-shunt-proxy/config.yaml" ]; then
 fi
 
 mkdir -p '/etc/ssl/tls-shunt-proxy'
-chown tls-shunt-proxy:tls-shunt-proxy /etc/ssl/tls-shunt-proxy
+chown -R tls-shunt-proxy:tls-shunt-proxy /etc/ssl/tls-shunt-proxy
 
 rm -r "${VSRC_ROOT}"
