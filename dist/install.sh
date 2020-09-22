@@ -2,6 +2,35 @@
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
+echo "info: Checking the current version ."
+[[ -f /usr/local/bin/tls-shunt-proxy ]] && current_tsp_version="$(/usr/local/bin/tls-shunt-proxy --help 2>&1 | awk 'NR==1{gsub(/"/,"");print $3}')"
+[[ -z ${current_tsp_version} ]] && echo 'info: tls-shunt-proxy is not installed .'
+
+echo "info: Checking the release version ."
+release_tsp_version=$(curl -L -s https://api.github.com/repos/liberal-boy/tls-shunt-proxy/releases/latest | grep "tag_name" | head -1 | awk -F '"' '{print $4}')
+[[ -z ${release_tsp_version} ]] && echo 'error: Failed to get release list, please check your network .' && exit 2
+
+echo "$release_tsp_version" >$version_tsp_cmp
+echo "$current_tsp_version" >>$version_tsp_cmp
+bc_tsp_version="0.6.2"
+
+if [[ "$current_tsp_version" < "$(sort -rV $version_tsp_cmp | head -1)" ]]; then
+    [[ "$current_tsp_version" < "$bc_tsp_version" ]] && read -rp "warn: Found the latest release of tls-shunt-proxy $release_tsp_version with a BREAKING CHANGE, upgrade now (Y/N) [N]?" upgrade_confirm
+    [[ -z ${upgrade_confirm} ]] && upgrade_confirm="no"
+    [[ "$current_tsp_version" >= "$bc_tsp_version" && -z ${current_tsp_version} ]] && upgrade_confirm="yes"
+    case $upgrade_confirm in
+    [yY][eE][sS] | [yY])
+        echo "info: Prepare to install the latest version ."
+        ;;
+    *) 
+        exit 0
+        ;;
+    esac
+else
+    echo "info: No new version. The current version of tls-shunt-proxy is $current_tsp_version ."
+    exit 0
+fi
+    
 VSRC_ROOT='/tmp/tls-shunt-proxy'
 DOWNLOAD_PATH='/tmp/tls-shunt-proxy/tls-shunt-proxy.zip'
 
