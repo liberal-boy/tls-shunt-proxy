@@ -5,7 +5,7 @@ export PATH
 version_tsp_cmp="/tmp/version_tsp_cmp.tmp"
 
 echo "info: checking the current version ."
-[[ -f /usr/local/bin/tls-shunt-proxy ]] && current_tsp_version="$(/usr/local/bin/tls-shunt-proxy --help 2>&1 | awk 'NR==1{gsub(/"/,"");print $3}')"
+[[ -f /usr/local/bin/tls-shunt-proxy ]] && current_tsp_version="$(/usr/local/bin/tls-shunt-proxy --help 2>&1 | awk 'NR==1 {print $3}')"
 [[ -z ${current_tsp_version} ]] && echo 'info: tls-shunt-proxy is not installed .'
 
 echo "info: checking the release version ."
