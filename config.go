@@ -126,6 +126,8 @@ func newHandler(name, args string) handler.Handler {
 		return handler.NewProxyPassHandler(args)
 	case "fileServer":
 		return handler.NewFileServerHandler(args)
+	case "dohServer":
+		return handler.NewDohServer(args)
 	default:
 		log.Fatalf("handler %s not supported\n", name)
 	}
