@@ -18,7 +18,7 @@ bc_tsp_version="0.6.2"
 
 if [[ "$current_tsp_version" < "$(sort -rV $version_tsp_cmp | head -1)" ]]; then
     upgrade_confirm="yes"
-    [[ "$current_tsp_version" < "$bc_tsp_version" && ! -z "$current_tsp_version" ]] && read -rp "warn: found the latest release of tls-shunt-proxy $release_tsp_version with a BREAKING CHANGE, upgrade now (Y/N) [N]?" upgrade_confirm
+    [[ "$current_tsp_version" < "$bc_tsp_version" && ! -z "$current_tsp_version" ]] && read -rp "warn: found the latest release of tls-shunt-proxy $release_tsp_version with a BREAKING CHANGE, upgrade now (Y/N) [N]? " upgrade_confirm
     [[ -z ${upgrade_confirm} ]] && upgrade_confirm="no"
     case $upgrade_confirm in
     [yY][eE][sS] | [yY])
