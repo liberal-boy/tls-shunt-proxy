@@ -22,7 +22,7 @@ if [[ "$current_tsp_version" < "$(sort -rV $version_tsp_cmp | head -1)" ]]; then
     [[ -z ${upgrade_confirm} ]] && upgrade_confirm="no"
     case $upgrade_confirm in
     [yY][eE][sS] | [yY])
-        echo "info: prepare to install the latest version ."
+        echo "info: prepare to install the latest version $release_tsp_version ."
         ;;
     *) 
         exit 0
