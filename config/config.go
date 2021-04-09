@@ -1,8 +1,10 @@
-package main
+package config
 
 import (
 	"crypto/tls"
+	"github.com/liberal-boy/tls-shunt-proxy/config/raw"
 	"github.com/liberal-boy/tls-shunt-proxy/handler"
+	"github.com/liberal-boy/tls-shunt-proxy/handler/http2"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
@@ -10,63 +12,27 @@ import (
 )
 
 type (
-	rawConfig struct {
-		Listen                                string
-		RedirectHttps                         string
-		InboundBufferSize, OutboundBufferSize int
-		VHosts                                []rawVHost
-	}
-	rawVHost struct {
-		Name          string
-		TlsOffloading bool
-		ManagedCert   bool
-		Cert          string
-		Key           string
-		KeyType       string
-		Alpn          string
-		Protocols     string
-		Http          rawHttpHandler
-		Trojan        rawHandler
-		Default       rawHandler
-	}
-	rawHandler struct {
-		Handler string
-		Args    string
-	}
-	rawHttpHandler struct {
-		Paths   []rawPathHandler
-		Handler string
-		Args    string
-	}
-	rawPathHandler struct {
-		Path       string
-		Handler    string
-		Args       string
-		TrimPrefix string
-	}
-)
-
-type (
-	config struct {
+	Config struct {
 		Listen        string
 		RedirectHttps string
-		vHosts        map[string]vHost
+		VHosts        map[string]VHost
 	}
-	vHost struct {
+	VHost struct {
 		TlsConfig    *tls.Config
 		Http         handler.Handler
-		PathHandlers []pathHandler
+		Http2        handler.Handler
+		PathHandlers []PathHandler
 		Trojan       handler.Handler
 		Default      handler.Handler
 	}
-	pathHandler struct {
-		path, trimPrefix string
-		handler          handler.Handler
+	PathHandler struct {
+		Path, TrimPrefix string
+		Handler          handler.Handler
 	}
 )
 
-func readRawConfig(path string) (conf rawConfig, err error) {
-	conf = rawConfig{InboundBufferSize: 4, OutboundBufferSize: 32}
+func readRawConfig(path string) (conf raw.RawConfig, err error) {
+	conf = raw.RawConfig{InboundBufferSize: 4, OutboundBufferSize: 32}
 	yamlFile, err := ioutil.ReadFile(path)
 	if err != nil {
 		return
@@ -78,7 +44,7 @@ func readRawConfig(path string) (conf rawConfig, err error) {
 	return
 }
 
-func readConfig(path string) (conf config, err error) {
+func ReadConfig(path string) (conf Config, err error) {
 	rawConf, err := readRawConfig(path)
 	if err != nil {
 		return
@@ -88,7 +54,7 @@ func readConfig(path string) (conf config, err error) {
 
 	conf.Listen = rawConf.Listen
 	conf.RedirectHttps = rawConf.RedirectHttps
-	conf.vHosts = make(map[string]vHost, len(rawConf.VHosts))
+	conf.VHosts = make(map[string]VHost, len(rawConf.VHosts))
 
 	for _, vh := range rawConf.VHosts {
 		var tlsConfig *tls.Config
@@ -97,20 +63,28 @@ func readConfig(path string) (conf config, err error) {
 			tlsConfig, err = getTlsConfig(vh.ManagedCert, vh.Name, vh.Cert, vh.Key, vh.KeyType, vh.Alpn, vh.Protocols)
 		}
 
-		pathHandlers := make([]pathHandler, len(vh.Http.Paths))
+		pathHandlers := make([]PathHandler, len(vh.Http.Paths))
 
 		for i, p := range vh.Http.Paths {
-			pathHandlers[i] = pathHandler{
-				path:       p.Path,
-				trimPrefix: p.TrimPrefix,
-				handler:    newHandler(p.Handler, p.Args),
+			pathHandlers[i] = PathHandler{
+				Path:       p.Path,
+				TrimPrefix: p.TrimPrefix,
+				Handler:    newHandler(p.Handler, p.Args),
 			}
 		}
 
-		conf.vHosts[strings.ToLower(vh.Name)] = vHost{
+		var http2Handler handler.Handler
+		if len(vh.Http2) != 0 {
+			http2Handler = http2.NewHttpMuxHandler(vh.Http2)
+		} else {
+			http2Handler = handler.NoopHandler
+		}
+
+		conf.VHosts[strings.ToLower(vh.Name)] = VHost{
 			TlsConfig:    tlsConfig,
 			Http:         newHandler(vh.Http.Handler, vh.Http.Args),
 			PathHandlers: pathHandlers,
+			Http2:        http2Handler,
 			Trojan:       newHandler(vh.Trojan.Handler, vh.Trojan.Args),
 			Default:      newHandler(vh.Default.Handler, vh.Default.Args),
 		}

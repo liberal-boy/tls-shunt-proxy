@@ -18,6 +18,7 @@ type SniffConn struct {
 
 const (
 	TypeHttp = iota
+	TypeHttp2
 	TypeTrojan
 	TypeUnknown
 )
@@ -31,9 +32,9 @@ var (
 		[]byte("DELETE"),
 		[]byte("OPTIONS"),
 		[]byte("CONNECT"),
-		[]byte("PRI"),
 	}
-	sep = []byte(" ")
+	http2Header = []byte("PRI * HTTP/2.0")
+	sep         = []byte(" ")
 )
 
 func NewPeekPreDataConn(c net.Conn) *SniffConn {
@@ -74,6 +75,10 @@ func (c *SniffConn) sniff() int {
 		return TypeHttp
 	}
 
+	if c.sniffHttp2() {
+		return TypeHttp2
+	}
+
 	if c.sniffTrojan() {
 		return TypeTrojan
 	}
@@ -95,6 +100,12 @@ func (c *SniffConn) sniffHttp() bool {
 		}
 	}
 	return false
+}
+
+func (c *SniffConn) sniffHttp2() bool {
+
+	return len(c.preData) >= len(http2Header) &&
+		bytes.Compare(c.preData[:len(http2Header)], http2Header) == 0
 }
 
 func (c *SniffConn) sniffTrojan() bool {
