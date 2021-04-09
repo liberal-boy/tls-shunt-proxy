@@ -73,6 +73,16 @@ vhosts:
       # args: 静态网站的文件路径
       args: /var/www/html
 
+    # http/2 请求的处理方式，当此项设置后，http 中的 path: "*" 设置将无效
+    http2:
+      - path: /
+        handler: fileServer
+        args: /var/www/rayfantasy
+      - path: /vmess
+        handler: proxyPass
+        # 目前只支持目标接受 h2c
+        args: h2c://localhost:40002
+
     # trojan: Trojan 协议流量处理方式
     trojan:
       handler: proxyPass
