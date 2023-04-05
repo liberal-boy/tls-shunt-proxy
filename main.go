@@ -64,13 +64,23 @@ func handle(conn net.Conn) {
 }
 
 func handleWithServerName(conn net.Conn, serverName string) {
+	var hasNonWWW bool
+	var nonWWWName string
 	vh, has := conf.VHosts[strings.ToLower(serverName)]
 	if !has {
+		if conf.HandleWWW && strings.HasPrefix(serverName, config.WWWPrefix) {
+			nonWWWName = strings.ToLower(strings.TrimPrefix(serverName, config.WWWPrefix))
+			vh, hasNonWWW = conf.VHosts[nonWWWName]
+			if hasNonWWW {
+				goto handle
+			}
+		}
 		log.Printf("no available vhost for %s\n", serverName)
 		handler.NewPlainTextHandler(handler.NoCertificateAvailable).Handle(conn)
 		return
 	}
 
+handle:
 	if vh.TlsConfig != nil {
 		conn = tlsOffloading(conn, vh.TlsConfig)
 		sniffConn := sniffer.NewPeekPreDataConn(conn)
