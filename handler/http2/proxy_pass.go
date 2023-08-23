@@ -22,18 +22,23 @@ func NewProxyPassHandler(target string) *ProxyPassHandler {
 		log.Fatalf("parse target url %s failed", target)
 	}
 
-	if targetUrl.Scheme != "h2c" {
-		log.Fatalln("http2 proxy pass supports h2c only")
+	switch targetUrl.Scheme {
+	case "h2c":
+		targetUrl.Scheme = "https"
+		handler.proxy = httputil.NewSingleHostReverseProxy(targetUrl)
+		handler.proxy.Transport = &http2.Transport{
+			DialTLS: func(network, addr string, cfg *tls.Config) (conn net.Conn, e error) {
+				return net.Dial(network, addr)
+			},
+		}
+		return &handler
+	case "http":
+		handler.proxy = httputil.NewSingleHostReverseProxy(targetUrl)
+		return &handler
+	default:
+		log.Fatalln("http2 proxy pass supports h2c and http only")
+		return nil
 	}
-
-	targetUrl.Scheme = "https"
-	handler.proxy = httputil.NewSingleHostReverseProxy(targetUrl)
-	handler.proxy.Transport = &http2.Transport{
-		DialTLS: func(network, addr string, cfg *tls.Config) (conn net.Conn, e error) {
-			return net.Dial(network, addr)
-		},
-	}
-	return &handler
 }
 
 func (p ProxyPassHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
