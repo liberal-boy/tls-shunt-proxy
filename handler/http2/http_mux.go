@@ -24,7 +24,9 @@ func NewHttpMuxHandler(paths []raw.RawPathHandler) *HttpMuxHandler {
 			mux.Handle(path.Path, newHandler(path.Handler, path.Args))
 		}
 
-		err := http.Serve(ln, h2c.NewHandler(mux, h2s))
+		withGzip := handler.DefaultGzipHandler().WrapHandler(mux)
+
+		err := http.Serve(ln, h2c.NewHandler(withGzip, h2s))
 		if err != nil {
 			log.Fatalln(err)
 		}

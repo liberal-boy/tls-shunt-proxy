@@ -17,7 +17,8 @@ func NewFileServerHandler(path string) *FileServerHandler {
 	go func() {
 		h2s := &http2.Server{}
 		fileServer := http.FileServer(http.Dir(path))
-		err := http.Serve(ln, h2c.NewHandler(fileServer, h2s))
+		withGzip := DefaultGzipHandler().WrapHandler(fileServer)
+		err := http.Serve(ln, h2c.NewHandler(withGzip, h2s))
 		if err != nil {
 			log.Fatalln(err)
 		}
