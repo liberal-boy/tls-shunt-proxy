@@ -84,7 +84,7 @@ func getCertificateFunc(managedCert bool, serverName, cert, key, keyType string)
 			return nil, err
 		}
 	} else {
-		err := magic.CacheUnmanagedCertificatePEMFile(cert, key, nil)
+		_, err := magic.CacheUnmanagedCertificatePEMFile(context.TODO(), cert, key, nil)
 		if err != nil {
 			err = fmt.Errorf("fail to load tls key pair for %s: %v", serverName, err)
 			return nil, err
