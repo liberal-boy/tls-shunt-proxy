@@ -19,8 +19,8 @@ func init() {
 	certmagic.DefaultACME.Agreed = true
 }
 
-func getTlsConfig(managedCert bool, serverName, cert, key, keyType, alpn, protocols string) (*tls.Config, error) {
-	certificateFunc, err := getCertificateFunc(managedCert, serverName, cert, key, keyType)
+func getTlsConfig(managedCert bool, serverName string, handleWWW bool, cert, key, keyType, alpn, protocols string) (*tls.Config, error) {
+	certificateFunc, err := getCertificateFunc(managedCert, serverName, handleWWW, cert, key, keyType)
 	if err != nil {
 		return nil, err
 	}
@@ -59,27 +59,31 @@ func getTlsConfig(managedCert bool, serverName, cert, key, keyType, alpn, protoc
 	return tlsConfig, nil
 }
 
-func getCertificateFunc(managedCert bool, serverName, cert, key, keyType string) (func(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error), error) {
+func getCertificateFunc(managedCert bool, serverName string, handleWWW bool, cert, key, keyType string) (func(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error), error) {
 	var keyGenerator = certmagic.DefaultKeyGenerator
 	if keyType != "" {
 		keyGenerator = certmagic.StandardKeyGenerator{KeyType: certmagic.KeyType(keyType)}
 	}
 
-	config := certmagic.Config{
+	certMagicConfig := certmagic.Config{
 		Storage:   &certmagic.FileStorage{Path: "./"},
 		KeySource: keyGenerator,
 	}
 
 	cache := certmagic.NewCache(certmagic.CacheOptions{
 		GetConfigForCert: func(certificate certmagic.Certificate) (c *certmagic.Config, err error) {
-			return &config, nil
+			return &certMagicConfig, nil
 		},
 	})
 
-	magic := certmagic.New(cache, config)
+	magic := certmagic.New(cache, certMagicConfig)
 
 	if managedCert {
-		err := magic.ManageAsync(context.Background(), []string{serverName})
+		domainNames := []string{serverName}
+		if handleWWW {
+			domainNames = append(domainNames, fmt.Sprintf("%s%s", WWWPrefix, serverName))
+		}
+		err := magic.ManageAsync(context.Background(), domainNames)
 		if err != nil {
 			return nil, err
 		}
