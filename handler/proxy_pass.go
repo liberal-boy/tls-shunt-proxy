@@ -70,7 +70,7 @@ func (h *ProxyPassHandler) Handle(conn net.Conn) {
 		}
 
 		var ipVer string
-		if strings.Index(remoteAddr, ":") >= 0 {
+		if strings.Contains(remoteAddr, ":") {
 			ipVer = "6"
 		} else {
 			ipVer = "4"
@@ -85,18 +85,31 @@ func (h *ProxyPassHandler) Handle(conn net.Conn) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
-	go doCopy(dstConn, conn, inboundBufferPool, &wg)
-	go doCopy(conn, dstConn, outboundBufferPool, &wg)
+	go func() {
+		if tcpConn, ok := dstConn.(*net.TCPConn); ok {
+			tcpConn.ReadFrom(conn)
+		} else {
+			doCopy(dstConn, conn, inboundBufferPool)
+		}
+		wg.Done()
+	}()
+	go func() {
+		if tcpConn, ok := dstConn.(*net.TCPConn); ok {
+			tcpConn.WriteTo(conn)
+		} else {
+			doCopy(conn, dstConn, outboundBufferPool)
+		}
+		wg.Done()
+	}()
 
 	wg.Wait()
 }
 
-func doCopy(dst io.Writer, src io.Reader, bufferPool *sync.Pool, wg *sync.WaitGroup) {
+func doCopy(dst io.Writer, src io.Reader, bufferPool *sync.Pool) {
 	buf := bufferPool.Get().([]byte)
-	defer bufferPool.Put(buf)
+	defer bufferPool.Put(&buf)
 	_, err := io.CopyBuffer(dst, src, buf)
 	if err != nil && err != io.EOF {
 		log.Printf("failed to proxy pass: %v\n", err)
 	}
-	wg.Done()
 }
