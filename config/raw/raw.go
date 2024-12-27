@@ -4,6 +4,7 @@ type (
 	RawConfig struct {
 		Listen                                string
 		RedirectHttps                         string
+		HandleWWW                             bool
 		InboundBufferSize, OutboundBufferSize int
 		VHosts                                []RawVHost
 	}

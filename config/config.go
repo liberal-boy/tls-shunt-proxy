@@ -11,10 +11,13 @@ import (
 	"strings"
 )
 
+const WWWPrefix = "www."
+
 type (
 	Config struct {
 		Listen        string
 		RedirectHttps string
+		HandleWWW     bool
 		VHosts        map[string]VHost
 	}
 	VHost struct {
@@ -54,13 +57,14 @@ func ReadConfig(path string) (conf Config, err error) {
 
 	conf.Listen = rawConf.Listen
 	conf.RedirectHttps = rawConf.RedirectHttps
+	conf.HandleWWW = rawConf.HandleWWW
 	conf.VHosts = make(map[string]VHost, len(rawConf.VHosts))
 
 	for _, vh := range rawConf.VHosts {
 		var tlsConfig *tls.Config
 
 		if vh.TlsOffloading {
-			tlsConfig, err = getTlsConfig(vh.ManagedCert, vh.Name, vh.Cert, vh.Key, vh.KeyType, vh.Alpn, vh.Protocols)
+			tlsConfig, err = getTlsConfig(vh.ManagedCert, vh.Name, conf.HandleWWW, vh.Cert, vh.Key, vh.KeyType, vh.Alpn, vh.Protocols)
 		}
 
 		pathHandlers := make([]PathHandler, len(vh.Http.Paths))

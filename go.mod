@@ -1,6 +1,6 @@
 module github.com/liberal-boy/tls-shunt-proxy
 
-go 1.14
+go 1.18
 
 require (
 	github.com/caddyserver/certmagic v0.19.2
@@ -15,4 +15,13 @@ require (
 	golang.org/x/tools v0.12.0 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
+)
+
+require (
+	github.com/cenkalti/backoff/v4 v4.0.0 // indirect
+	github.com/klauspost/cpuid v1.2.3 // indirect
+	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073 // indirect
+	golang.org/x/sys v0.0.0-20190801041406-cbf593c0f2f3 // indirect
+	golang.org/x/text v0.3.2 // indirect
+	gopkg.in/square/go-jose.v2 v2.3.1 // indirect
 )
