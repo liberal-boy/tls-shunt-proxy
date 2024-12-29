@@ -15,6 +15,7 @@ type (
 	Config struct {
 		Listen        string
 		RedirectHttps string
+		Fallback      handler.Handler
 		VHosts        map[string]VHost
 	}
 	VHost struct {
@@ -54,6 +55,11 @@ func ReadConfig(path string) (conf Config, err error) {
 
 	conf.Listen = rawConf.Listen
 	conf.RedirectHttps = rawConf.RedirectHttps
+	if rawConf.Fallback != "" {
+		conf.Fallback = handler.NewProxyPassHandler(rawConf.Fallback)
+	} else {
+		conf.Fallback = handler.NoopHandler
+	}
 	conf.VHosts = make(map[string]VHost, len(rawConf.VHosts))
 
 	for _, vh := range rawConf.VHosts {

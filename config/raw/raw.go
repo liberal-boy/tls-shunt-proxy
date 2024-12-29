@@ -5,6 +5,7 @@ type (
 		Listen                                string
 		RedirectHttps                         string
 		InboundBufferSize, OutboundBufferSize int
+		Fallback                              string
 		VHosts                                []RawVHost
 	}
 	RawVHost struct {

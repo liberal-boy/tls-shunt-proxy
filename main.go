@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-const version = "0.8.2"
+const version = "0.9.0"
 
 var conf config.Config
 
@@ -55,8 +55,12 @@ func listenAndServe() {
 func handle(conn net.Conn) {
 	serverName, sniConn, err := sni.ServerNameFromConn(conn)
 	if err != nil {
-		log.Printf("fail to obtain server name: %v\n", err)
-		handler.NewPlainTextHandler(handler.SentHttpToHttps).Handle(conn)
+		if conf.Fallback != handler.NoopHandler {
+			conf.Fallback.Handle(sniConn)
+		} else {
+			log.Printf("fail to obtain server name: %v\n", err)
+			handler.NewPlainTextHandler(handler.SentHttpToHttps).Handle(conn)
+		}
 		return
 	}
 
@@ -66,8 +70,12 @@ func handle(conn net.Conn) {
 func handleWithServerName(conn net.Conn, serverName string) {
 	vh, has := conf.VHosts[strings.ToLower(serverName)]
 	if !has {
-		log.Printf("no available vhost for %s\n", serverName)
-		handler.NewPlainTextHandler(handler.NoCertificateAvailable).Handle(conn)
+		if conf.Fallback != handler.NoopHandler {
+			conf.Fallback.Handle(conn)
+		} else {
+			log.Printf("no available vhost for %s\n", serverName)
+			handler.NewPlainTextHandler(handler.NoCertificateAvailable).Handle(conn)
+		}
 		return
 	}
 

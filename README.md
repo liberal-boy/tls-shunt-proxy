@@ -40,6 +40,9 @@ inboundbuffersize: 4
 # outboundbuffersize: 出站缓冲区大小，单位 KB, 默认值 32
 outboundbuffersize: 32
 
+# 无法识别 sni 或 sni 不在 vhost 中的请求回落地址，同 proxyPass 参数格式
+fallback: 127.0.0.1:8443
+
 # vhosts: 按照按照 tls sni 扩展划分为多个虚拟 host
 vhosts:
 
