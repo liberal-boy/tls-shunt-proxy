@@ -70,13 +70,15 @@ func getCertificateFunc(managedCert bool, serverName, cert, key, keyType string)
 		KeySource: keyGenerator,
 	}
 
+	var magic *certmagic.Config
+
 	cache := certmagic.NewCache(certmagic.CacheOptions{
 		GetConfigForCert: func(certificate certmagic.Certificate) (c *certmagic.Config, err error) {
-			return &config, nil
+			return magic, nil
 		},
 	})
 
-	magic := certmagic.New(cache, config)
+	magic = certmagic.New(cache, config)
 
 	if managedCert {
 		err := magic.ManageAsync(context.Background(), []string{serverName})
