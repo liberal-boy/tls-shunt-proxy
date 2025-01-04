@@ -71,19 +71,16 @@ func (c *SniffConn) sniff() int {
 		return TypeUnknown
 	}
 
-	if c.sniffHttp() {
+	switch {
+	case c.sniffHttp():
 		return TypeHttp
-	}
-
-	if c.sniffHttp2() {
+	case c.sniffHttp2():
 		return TypeHttp2
-	}
-
-	if c.sniffTrojan() {
+	case c.sniffTrojan():
 		return TypeTrojan
+	default:
+		return TypeUnknown
 	}
-
-	return TypeUnknown
 }
 
 func (c *SniffConn) sniffHttp() bool {
@@ -93,19 +90,21 @@ func (c *SniffConn) sniffHttp() bool {
 		return false
 	}
 
+	method := preDataParts[0]
 	for _, m := range httpMethods {
-		if bytes.Compare(preDataParts[0], m) == 0 {
+		if bytes.Equal(method, m) {
 			c.path = string(preDataParts[1])
 			return true
 		}
 	}
+
 	return false
 }
 
 func (c *SniffConn) sniffHttp2() bool {
 
 	return len(c.preData) >= len(http2Header) &&
-		bytes.Compare(c.preData[:len(http2Header)], http2Header) == 0
+		bytes.Equal(c.preData[:len(http2Header)], http2Header)
 }
 
 func (c *SniffConn) sniffTrojan() bool {
