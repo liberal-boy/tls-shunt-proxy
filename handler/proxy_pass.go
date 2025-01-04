@@ -70,7 +70,7 @@ func (h *ProxyPassHandler) Handle(conn net.Conn) {
 		}
 
 		var ipVer string
-		if strings.Index(remoteAddr, ":") >= 0 {
+		if strings.Contains(remoteAddr, ":") {
 			ipVer = "6"
 		} else {
 			ipVer = "4"
