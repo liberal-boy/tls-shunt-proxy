@@ -41,6 +41,10 @@ func NewProxyPassHandler(args string) *ProxyPassHandler {
 }
 
 func (h *ProxyPassHandler) Handle(conn net.Conn) {
+	if conn == nil {
+		return
+	}
+
 	defer conn.Close()
 
 	var err error
